@@ -45,3 +45,14 @@ thirdparty:
   diary-list-url: /toy/v2/getDiaryList
   ota-status-url: /devicemgr/device/CGI!checkOtaStatus.action
   timeout: 10000
+
+# MQTT 配置
+mqtt:
+  broker:
+    url: tcp://mqtt.toy.visiondigit.cn:1883
+  username: app
+  password: ztac12378900
+  client:
+    id: backend_server_${random.value}
+  default:
+    topic: ctl/+
