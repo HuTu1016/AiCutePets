@@ -212,4 +212,11 @@
         WHERE device_uid = #{deviceUid}
     </update>
 
+    <!-- 解绑设备的所有用户关系（设备重置时调用） -->
+    <update id="unbindAllByDeviceUid">
+        UPDATE user_device_rel 
+        SET is_owner = 0, is_current = 0
+        WHERE device_uid = #{deviceUid}
+    </update>
+
 </mapper>

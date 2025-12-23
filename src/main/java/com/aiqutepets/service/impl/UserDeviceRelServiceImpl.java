@@ -61,4 +61,10 @@ public class UserDeviceRelServiceImpl implements UserDeviceRelService {
     public boolean removeByUserIdAndDeviceUid(Long userId, String deviceUid) {
         return userDeviceRelMapper.deleteByUserIdAndDeviceUid(userId, deviceUid) > 0;
     }
+
+    @Override
+    public boolean unbindAllByDevice(String deviceUid) {
+        int affected = userDeviceRelMapper.unbindAllByDeviceUid(deviceUid);
+        return affected >= 0;
+    }
 }

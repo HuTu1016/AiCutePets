@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * 设备控制服务实现类
- * 通过 MQTT Gateway 向设备发送控制指令
+ * 通过 MQTT Gateway 向设备发送控制指令 (文档 1.2.3)
  */
 @Slf4j
 @Service
@@ -36,8 +36,8 @@ public class DeviceControlServiceImpl implements DeviceControlService {
     private static final String CMD_UPDATE_START = "updatestart";
 
     @Override
-    public void sendResetCommand(String deviceUid) {
-        log.info("发送恢复出厂设置指令: deviceUid={}", deviceUid);
+    public void resetDevice(String deviceUid) {
+        log.info("恢复出厂设置: deviceUid={}", deviceUid);
 
         try {
             // 构造 JSON: {"cmd": "restorefactory", "msgId": "..."}
@@ -61,8 +61,8 @@ public class DeviceControlServiceImpl implements DeviceControlService {
     }
 
     @Override
-    public void sendUpgradeCommand(String deviceUid) {
-        log.info("发送升级指令: deviceUid={}", deviceUid);
+    public void startOta(String deviceUid) {
+        log.info("开始OTA升级: deviceUid={}", deviceUid);
 
         try {
             // 构造 JSON: {"cmd": "updatestart"}
@@ -76,12 +76,12 @@ public class DeviceControlServiceImpl implements DeviceControlService {
             // 通过 Gateway 发送
             mqttGateway.sendToMqtt(topic, payloadJson);
 
-            log.info("升级指令发送成功: deviceUid={}, topic={}, payload={}",
+            log.info("OTA升级指令发送成功: deviceUid={}, topic={}, payload={}",
                     deviceUid, topic, payloadJson);
 
         } catch (Exception e) {
-            log.error("发送升级指令失败: deviceUid={}", deviceUid, e);
-            throw new RuntimeException("发送升级指令失败", e);
+            log.error("发送OTA升级指令失败: deviceUid={}", deviceUid, e);
+            throw new RuntimeException("发送OTA升级指令失败", e);
         }
     }
 

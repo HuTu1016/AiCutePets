@@ -53,7 +53,7 @@ mqtt:
   username: app
   password: ztac12378900
   client:
-    id: backend_server_${random.value}
+    id: backend_server_${random.uuid}
   topic:
-    inbound: up/+
+    inbound: up/+,action/+
     outbound: ctl/+

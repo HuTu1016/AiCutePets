@@ -117,4 +117,13 @@ public interface UserDeviceRelMapper {
      */
     int updateOtaUpdateFlag(@Param("deviceUid") String deviceUid,
             @Param("hasOtaUpdate") Integer hasOtaUpdate);
+
+    /**
+     * 解绑设备的所有用户关系（设备重置时调用）
+     * 将 is_bind 设为 0
+     *
+     * @param deviceUid 设备UID
+     * @return 影响行数
+     */
+    int unbindAllByDeviceUid(@Param("deviceUid") String deviceUid);
 }

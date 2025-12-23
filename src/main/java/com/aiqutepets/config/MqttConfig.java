@@ -92,7 +92,7 @@ public class MqttConfig {
 
     /**
      * MQTT 入站适配器
-     * 监听指定 Topic 的消息 (up/+)
+     * 监听指定 Topic 的消息 (up/+ 和 action/+)
      * QoS: 1
      */
     @Bean
@@ -100,15 +100,18 @@ public class MqttConfig {
         // 使用不同的 clientId 避免与出站冲突
         String inboundClientId = clientId + "_inbound";
 
+        // 支持多 Topic 订阅（逗号分隔）
+        String[] topics = inboundTopic.split(",");
+
         MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(inboundClientId,
-                mqttClientFactory(), inboundTopic);
+                mqttClientFactory(), topics);
 
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1); // QoS = 1
         adapter.setOutputChannel(mqttInputChannel());
 
-        log.info("MQTT 入站适配器配置完成: clientId={}, topic={}, qos=1", inboundClientId, inboundTopic);
+        log.info("MQTT 入站适配器配置完成: clientId={}, topics={}, qos=1", inboundClientId, inboundTopic);
 
         return adapter;
     }

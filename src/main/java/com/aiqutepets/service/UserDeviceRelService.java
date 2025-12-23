@@ -53,4 +53,13 @@ public interface UserDeviceRelService {
      * 根据用户ID和设备UID删除关系
      */
     boolean removeByUserIdAndDeviceUid(Long userId, String deviceUid);
+
+    /**
+     * 解绑设备的所有用户关系（设备重置时调用）
+     * 将该设备的所有绑定关系设为未绑定状态
+     *
+     * @param deviceUid 设备UID
+     * @return 是否成功
+     */
+    boolean unbindAllByDevice(String deviceUid);
 }
