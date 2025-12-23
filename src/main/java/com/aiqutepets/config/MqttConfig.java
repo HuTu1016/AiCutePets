@@ -1,12 +1,12 @@
 package com.aiqutepets.config;
 
-import com.aiqutepets.service.DeviceMqttService;
+import com.aiqutepets.service.MqttMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageProducer;
@@ -15,10 +15,8 @@ import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessagingException;
 
 /**
  * MQTT 配置类
@@ -26,6 +24,7 @@ import org.springframework.messaging.MessagingException;
  */
 @Slf4j
 @Configuration
+@IntegrationComponentScan(basePackages = "com.aiqutepets.service")
 public class MqttConfig {
 
     @Value("${mqtt.broker.url}")
@@ -40,11 +39,11 @@ public class MqttConfig {
     @Value("${mqtt.client.id}")
     private String clientId;
 
-    @Value("${mqtt.default.topic}")
-    private String defaultTopic;
+    @Value("${mqtt.topic.inbound}")
+    private String inboundTopic;
 
-    @Autowired(required = false)
-    private DeviceMqttService deviceMqttService;
+    @Value("${mqtt.topic.outbound}")
+    private String outboundTopic;
 
     /**
      * MQTT 客户端工厂
@@ -93,7 +92,8 @@ public class MqttConfig {
 
     /**
      * MQTT 入站适配器
-     * 监听指定 Topic 的消息
+     * 监听指定 Topic 的消息 (up/+)
+     * QoS: 1
      */
     @Bean
     public MessageProducer inbound() {
@@ -101,45 +101,26 @@ public class MqttConfig {
         String inboundClientId = clientId + "_inbound";
 
         MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(inboundClientId,
-                mqttClientFactory(), defaultTopic);
+                mqttClientFactory(), inboundTopic);
 
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
-        adapter.setQos(1);
+        adapter.setQos(1); // QoS = 1
         adapter.setOutputChannel(mqttInputChannel());
 
-        log.info("MQTT 入站适配器配置完成: clientId={}, topic={}", inboundClientId, defaultTopic);
+        log.info("MQTT 入站适配器配置完成: clientId={}, topic={}, qos=1", inboundClientId, inboundTopic);
 
         return adapter;
     }
 
     /**
-     * MQTT 消息处理器
-     * 处理从 MQTT Broker 接收到的消息
+     * 入站消息处理器
+     * 将 MqttMessageHandler 与 mqttInputChannel 绑定
      */
     @Bean
     @ServiceActivator(inputChannel = "mqttInputChannel")
-    public MessageHandler handler() {
-        return new MessageHandler() {
-            @Override
-            public void handleMessage(Message<?> message) throws MessagingException {
-                String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
-                String payload = message.getPayload().toString();
-
-                log.info("收到 MQTT 消息: topic={}, payload={}", topic, payload);
-
-                // 解析 Topic，提取设备 UID
-                // Topic 格式示例: ctl/{deviceUid}
-                if (topic != null && topic.startsWith("ctl/")) {
-                    String deviceUid = topic.substring(4);
-
-                    // 调用 DeviceMqttService 处理消息
-                    if (deviceMqttService != null) {
-                        deviceMqttService.handleDeviceStatusMessage(deviceUid, payload);
-                    }
-                }
-            }
-        };
+    public MessageHandler mqttInboundHandler(MqttMessageHandler mqttMessageHandler) {
+        return mqttMessageHandler;
     }
 
     // ==================== 出站配置（发送消息）====================
@@ -165,10 +146,10 @@ public class MqttConfig {
         MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(outboundClientId, mqttClientFactory());
 
         messageHandler.setAsync(true);
-        messageHandler.setDefaultTopic(defaultTopic);
+        messageHandler.setDefaultTopic(outboundTopic);
         messageHandler.setDefaultQos(1);
 
-        log.info("MQTT 出站处理器配置完成: clientId={}", outboundClientId);
+        log.info("MQTT 出站处理器配置完成: clientId={}, defaultTopic={}", outboundClientId, outboundTopic);
 
         return messageHandler;
     }

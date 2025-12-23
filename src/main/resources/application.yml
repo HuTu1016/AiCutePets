@@ -54,5 +54,6 @@ mqtt:
   password: ztac12378900
   client:
     id: backend_server_${random.value}
-  default:
-    topic: ctl/+
+  topic:
+    inbound: up/+
+    outbound: ctl/+
