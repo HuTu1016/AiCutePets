@@ -122,14 +122,14 @@ mvn spring-boot:run
 
 | 方法 | 路径 | 描述 | 鉴权 |
 |-----|------|------|-----|
-| POST | `/login` | 微信登录 | ❌ |
+| POST | `/login` | 微信登录 |  |
 | POST | `/phone` | 绑定手机号 | ✅ |
 
 ### 设备接口 `/api/device`
 
 | 方法 | 路径 | 描述 | 鉴权 |
 |-----|------|------|-----|
-| GET | `/check` | 校验设备合法性 | ❌ |
+| GET | `/check` | 校验设备合法性 
 | POST | `/bind` | 绑定设备 | ✅ |
 | GET | `/detail` | 获取设备详情 | ✅ |
 | PUT | `/update` | 更新设备信息 | ✅ |
@@ -163,8 +163,8 @@ mvn spring-boot:run
 
 | 方法 | 路径 | 描述 | 鉴权 |
 |-----|------|------|-----|
-| GET | `/detail` | 获取富文本内容 | ❌ |
-| POST | `/cache/clear` | 清除内容缓存 | ❌ |
+| GET | `/detail` | 获取富文本内容 |  |
+| POST | `/cache/clear` | 清除内容缓存 |  |
 
 ## 📊 数据库设计
 
