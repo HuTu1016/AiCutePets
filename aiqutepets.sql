@@ -11,7 +11,7 @@
  Target Server Version : 80044 (8.0.44)
  File Encoding         : 65001
 
- Date: 22/12/2025 12:07:01
+ Date: 23/12/2025 12:57:10
 */
 
 SET NAMES utf8mb4;
@@ -37,6 +37,24 @@ CREATE TABLE `app_rich_content`  (
 -- ----------------------------
 INSERT INTO `app_rich_content` VALUES (1, 'guide', '玩伴指南', '<p>亲爱的小朋友，我是多尼兔！<br>我可以给你讲故事，还能陪你聊天哦。</p><h3>如何使用我？</h3><p>1. 按下肚子说话...</p>', '2025-12-19 17:45:16', '2025-12-19 17:45:16');
 INSERT INTO `app_rich_content` VALUES (2, 'agreement', '陪伴约定', '<p>为了养成好习惯，我们需要做一个小小的约定：</p><ul><li>每天使用不超过30分钟</li><li>晚上9点就要睡觉觉</li></ul>', '2025-12-19 17:45:16', '2025-12-19 17:45:16');
+
+-- ----------------------------
+-- Table structure for device_action_log
+-- ----------------------------
+DROP TABLE IF EXISTS `device_action_log`;
+CREATE TABLE `device_action_log`  (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `device_uid` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `action_code` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '行为: chat, pet_cat, feed, play',
+  `duration_or_count` int NULL DEFAULT 0 COMMENT '时长或次数',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_uid`(`device_uid` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备交互行为日志' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of device_action_log
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for device_diary
@@ -98,7 +116,7 @@ CREATE TABLE `device_ota_log`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_uid`(`device_uid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备OTA操作日志' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备OTA操作日志' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of device_ota_log
@@ -148,6 +166,7 @@ CREATE TABLE `user_device_rel`  (
   `growth_stats_json` json NULL COMMENT '缓存:完整的五维成长数据',
   `last_mood_content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '缓存:AI今日心情文案',
   `last_mood_date` date NULL DEFAULT NULL COMMENT '缓存:心情生成的日期(yyyy-MM-dd)',
+  `has_ota_update` tinyint(1) NULL DEFAULT 0 COMMENT 'OTA更新标记: 0-无更新, 1-有更新',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_user_device`(`user_id` ASC, `device_uid` ASC) USING BTREE,
   INDEX `idx_user_current`(`user_id` ASC, `is_current` ASC) USING BTREE
