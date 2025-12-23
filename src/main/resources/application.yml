@@ -41,9 +41,13 @@ logging:
 
 # 第三方接口配置
 thirdparty:
-  base-url: https://toy.visiondigit.cn # 替换为实际的第三方接口域名
+  base-url: https://toy.visiondigit.cn
+  sign-secret: gyvhh104ow34iqhy6410yqqnu0ofsp82
+  aes-key: 885ee6378f2b29c8
   diary-list-url: /toy/v2/getDiaryList
   ota-status-url: /devicemgr/device/CGI!checkOtaStatus.action
+  ota-check-ver-url: /devicemgr/app/CGI!getDeviceSoft.action
+  ota-trigger-url: /devicemgr/app/CGI!upgradeDevice.action
   timeout: 10000
 
 # MQTT 配置
