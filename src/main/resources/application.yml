@@ -1,0 +1,47 @@
+server:
+  port: 8888
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/aiqutepets?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  # Redis 配置
+  redis:
+    host: localhost
+    port: 6379
+#    password:  # 如果有密码则填写
+    database: 0
+    timeout: 3000ms
+
+# MyBatis 配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.aiqutepets.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 微信小程序配置
+wx:
+  miniapp:
+    app-id: your_app_id
+    app-secret: your_app_secret
+
+# JWT 配置
+jwt:
+  secret: aiqutepets-jwt-secret-key-2025-must-be-at-least-32-bytes
+  expiration: 604800000  # 7天（毫秒）
+
+# 日志配置
+logging:
+  level:
+    com.aiqutepets: debug
+
+# 第三方接口配置
+thirdparty:
+  base-url: https://toy.visiondigit.cn # 替换为实际的第三方接口域名
+  diary-list-url: /toy/v2/getDiaryList
+  ota-status-url: /devicemgr/device/CGI!checkOtaStatus.action
+  timeout: 10000

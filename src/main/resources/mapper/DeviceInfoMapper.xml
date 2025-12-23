@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiqutepets.mapper.DeviceInfoMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aiqutepets.entity.DeviceInfo">
+        <id column="id" property="id"/>
+        <result column="device_uid" property="deviceUid"/>
+        <result column="mac" property="mac"/>
+        <result column="secret_key" property="secretKey"/>
+        <result column="product_model" property="productModel"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="firmware_version" property="firmwareVersion"/>
+        <result column="battery_level" property="batteryLevel"/>
+        <result column="online_status" property="onlineStatus"/>
+        <result column="last_active_time" property="lastActiveTime"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, device_uid, mac, secret_key, product_model, status, create_time, firmware_version, battery_level, online_status, last_active_time
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM device_info
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据设备UID查询 -->
+    <select id="selectByDeviceUid" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM device_info
+        WHERE device_uid = #{deviceUid}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM device_info
+        ORDER BY id DESC
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.aiqutepets.entity.DeviceInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO device_info (device_uid, mac, secret_key, product_model, status, create_time, firmware_version, battery_level, online_status, last_active_time)
+        VALUES (#{deviceUid}, #{mac}, #{secretKey}, #{productModel}, #{status}, #{createTime}, #{firmwareVersion}, #{batteryLevel}, #{onlineStatus}, #{lastActiveTime})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.aiqutepets.entity.DeviceInfo">
+        UPDATE device_info
+        <set>
+            <if test="deviceUid != null">device_uid = #{deviceUid},</if>
+            <if test="mac != null">mac = #{mac},</if>
+            <if test="secretKey != null">secret_key = #{secretKey},</if>
+            <if test="productModel != null">product_model = #{productModel},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="firmwareVersion != null">firmware_version = #{firmwareVersion},</if>
+            <if test="batteryLevel != null">battery_level = #{batteryLevel},</if>
+            <if test="onlineStatus != null">online_status = #{onlineStatus},</if>
+            <if test="lastActiveTime != null">last_active_time = #{lastActiveTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="deleteById">
+        DELETE FROM device_info WHERE id = #{id}
+    </delete>
+
+</mapper>

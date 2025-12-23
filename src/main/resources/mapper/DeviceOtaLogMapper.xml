@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiqutepets.mapper.DeviceOtaLogMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aiqutepets.entity.DeviceOtaLog">
+        <id column="id" property="id"/>
+        <result column="device_uid" property="deviceUid"/>
+        <result column="user_id" property="userId"/>
+        <result column="target_version" property="targetVersion"/>
+        <result column="action_type" property="actionType"/>
+        <result column="status_code" property="statusCode"/>
+        <result column="api_response" property="apiResponse"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 基本字段 -->
+    <sql id="Base_Column_List">
+        id, device_uid, user_id, target_version, action_type, status_code, api_response, create_time
+    </sql>
+
+    <!-- 插入日志 -->
+    <insert id="insert" parameterType="com.aiqutepets.entity.DeviceOtaLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO device_ota_log (device_uid, user_id, target_version, action_type, status_code, api_response)
+        VALUES (#{deviceUid}, #{userId}, #{targetVersion}, #{actionType}, #{statusCode}, #{apiResponse})
+    </insert>
+
+    <!-- 根据设备UID查询 -->
+    <select id="selectByDeviceUid" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM device_ota_log
+        WHERE device_uid = #{deviceUid}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据设备UID和操作类型查询最新一条 -->
+    <select id="selectLatestByDeviceUidAndAction" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM device_ota_log
+        WHERE device_uid = #{deviceUid} AND action_type = #{actionType}
+        ORDER BY create_time DESC
+        LIMIT 1
+    </select>
+
+</mapper>

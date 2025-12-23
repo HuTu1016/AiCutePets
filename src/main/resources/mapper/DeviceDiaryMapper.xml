@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiqutepets.mapper.DeviceDiaryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aiqutepets.entity.DeviceDiary">
+        <id column="id" property="id"/>
+        <result column="device_uid" property="deviceUid"/>
+        <result column="diary_date" property="diaryDate"/>
+        <result column="content" property="content"/>
+        <result column="emotion_tags" property="emotionTags"/>
+        <result column="ai_generated_time" property="aiGeneratedTime"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, device_uid, diary_date, content, emotion_tags, ai_generated_time, create_time
+    </sql>
+
+    <!-- 根据设备UID和日期查询 -->
+    <select id="selectByDeviceUidAndDate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM device_diary
+        WHERE device_uid = #{deviceUid} AND diary_date = #{diaryDate}
+        LIMIT 1
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.aiqutepets.entity.DeviceDiary" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO device_diary (device_uid, diary_date, content, emotion_tags, ai_generated_time)
+        VALUES (#{deviceUid}, #{diaryDate}, #{content}, #{emotionTags}, #{aiGeneratedTime})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.aiqutepets.entity.DeviceDiary">
+        UPDATE device_diary
+        <set>
+            <if test="content != null">content = #{content},</if>
+            <if test="emotionTags != null">emotion_tags = #{emotionTags},</if>
+            <if test="aiGeneratedTime != null">ai_generated_time = #{aiGeneratedTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

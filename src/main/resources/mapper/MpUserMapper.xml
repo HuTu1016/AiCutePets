@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiqutepets.mapper.MpUserMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aiqutepets.entity.MpUser">
+        <id column="id" property="id"/>
+        <result column="openid" property="openid"/>
+        <result column="unionid" property="unionid"/>
+        <result column="phone" property="phone"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar" property="avatar"/>
+        <result column="session_key" property="sessionKey"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, openid, unionid, phone, nickname, avatar, session_key, create_time, update_time
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM mp_user
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据OpenID查询 -->
+    <select id="selectByOpenid" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM mp_user
+        WHERE openid = #{openid}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM mp_user
+        ORDER BY id DESC
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.aiqutepets.entity.MpUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mp_user (openid, unionid, phone, nickname, avatar, session_key, create_time, update_time)
+        VALUES (#{openid}, #{unionid}, #{phone}, #{nickname}, #{avatar}, #{sessionKey}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.aiqutepets.entity.MpUser">
+        UPDATE mp_user
+        <set>
+            <if test="openid != null">openid = #{openid},</if>
+            <if test="unionid != null">unionid = #{unionid},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="sessionKey != null">session_key = #{sessionKey},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="deleteById">
+        DELETE FROM mp_user WHERE id = #{id}
+    </delete>
+
+</mapper>

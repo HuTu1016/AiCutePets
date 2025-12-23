@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiqutepets.mapper.UserDeviceRelMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.aiqutepets.entity.UserDeviceRel">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="device_uid" property="deviceUid"/>
+        <result column="is_owner" property="isOwner"/>
+        <result column="bind_source" property="bindSource"/>
+        <result column="create_time" property="createTime"/>
+        <result column="device_nickname" property="deviceNickname"/>
+        <result column="device_avatar" property="deviceAvatar"/>
+        <result column="is_top" property="isTop"/>
+        <result column="is_current" property="isCurrent"/>
+        <result column="last_used_time" property="lastUsedTime"/>
+        <result column="intimacy_level" property="intimacyLevel"/>
+        <result column="intimacy_score" property="intimacyScore"/>
+        <result column="current_badge" property="currentBadge"/>
+        <result column="has_ota_update" property="hasOtaUpdate"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, user_id, device_uid, is_owner, bind_source, create_time, device_nickname, device_avatar, is_top, is_current, last_used_time, intimacy_level, intimacy_score, current_badge, has_ota_update
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user_device_rel
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据用户ID查询 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user_device_rel
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据设备UID查询 -->
+    <select id="selectByDeviceUid" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user_device_rel
+        WHERE device_uid = #{deviceUid}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据用户ID和设备UID查询 -->
+    <select id="selectByUserIdAndDeviceUid" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user_device_rel
+        WHERE user_id = #{userId} AND device_uid = #{deviceUid}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user_device_rel
+        ORDER BY id DESC
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.aiqutepets.entity.UserDeviceRel" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_device_rel (user_id, device_uid, is_owner, bind_source, create_time, device_nickname, device_avatar, is_top)
+        VALUES (#{userId}, #{deviceUid}, #{isOwner}, #{bindSource}, #{createTime}, #{deviceNickname}, #{deviceAvatar}, #{isTop})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.aiqutepets.entity.UserDeviceRel">
+        UPDATE user_device_rel
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="deviceUid != null">device_uid = #{deviceUid},</if>
+            <if test="isOwner != null">is_owner = #{isOwner},</if>
+            <if test="bindSource != null">bind_source = #{bindSource},</if>
+            <if test="deviceNickname != null">device_nickname = #{deviceNickname},</if>
+            <if test="deviceAvatar != null">device_avatar = #{deviceAvatar},</if>
+            <if test="isTop != null">is_top = #{isTop},</if>
+            <if test="intimacyLevel != null">intimacy_level = #{intimacyLevel},</if>
+            <if test="intimacyScore != null">intimacy_score = #{intimacyScore},</if>
+            <if test="currentBadge != null">current_badge = #{currentBadge},</if>
+            <if test="hasOtaUpdate != null">has_ota_update = #{hasOtaUpdate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="deleteById">
+        DELETE FROM user_device_rel WHERE id = #{id}
+    </delete>
+
+    <!-- 根据用户ID和设备UID删除 -->
+    <delete id="deleteByUserIdAndDeviceUid">
+        DELETE FROM user_device_rel WHERE user_id = #{userId} AND device_uid = #{deviceUid}
+    </delete>
+
+    <!-- 联表查询用户的设备列表 (包含设备详细信息) -->
+    <resultMap id="MyDeviceResultMap" type="com.aiqutepets.dto.MyDeviceDTO">
+        <result column="device_uid" property="deviceUid"/>
+        <result column="device_nickname" property="deviceNickname"/>
+        <result column="device_avatar" property="deviceAvatar"/>
+        <result column="is_top" property="isTop"/>
+        <result column="is_owner" property="isOwner"/>
+        <result column="mac" property="mac"/>
+        <result column="product_model" property="productModel"/>
+        <result column="firmware_version" property="firmwareVersion"/>
+        <result column="battery_level" property="batteryLevel"/>
+        <result column="online_status" property="onlineStatus"/>
+        <result column="last_active_time" property="lastActiveTime"/>
+        <result column="bind_time" property="bindTime"/>
+    </resultMap>
+
+    <select id="selectMyDevices" resultMap="MyDeviceResultMap">
+        SELECT 
+            r.device_uid,
+            r.device_nickname,
+            r.device_avatar,
+            r.is_top,
+            r.is_owner,
+            r.create_time AS bind_time,
+            d.mac,
+            d.product_model,
+            d.firmware_version,
+            d.battery_level,
+            d.online_status,
+            d.last_active_time
+        FROM user_device_rel r
+        LEFT JOIN device_info d ON r.device_uid = d.device_uid
+        WHERE r.user_id = #{userId}
+        ORDER BY r.is_top DESC, r.create_time DESC
+    </select>
+
+    <!-- 联表查询用户的单个设备详情 -->
+    <select id="selectMyDeviceDetail" resultMap="MyDeviceResultMap">
+        SELECT 
+            r.device_uid,
+            r.device_nickname,
+            r.device_avatar,
+            r.is_top,
+            r.is_owner,
+            r.create_time AS bind_time,
+            d.mac,
+            d.product_model,
+            d.firmware_version,
+            d.battery_level,
+            d.online_status,
+            d.last_active_time
+        FROM user_device_rel r
+        LEFT JOIN device_info d ON r.device_uid = d.device_uid
+        WHERE r.user_id = #{userId} AND r.device_uid = #{deviceUid}
+    </select>
+
+    <!-- 设备列表结果映射 (用于首页设备切换) -->
+    <resultMap id="DeviceListResultMap" type="com.aiqutepets.dto.DeviceListDTO">
+        <result column="device_uid" property="deviceUid"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar" property="avatar"/>
+        <result column="is_current" property="isCurrent"/>
+        <result column="is_online" property="isOnline"/>
+        <result column="battery_level" property="batteryLevel"/>
+        <result column="product_model" property="productModel"/>
+        <result column="mac_address" property="macAddress"/>
+    </resultMap>
+
+    <!-- 查询我的设备列表 (用于首页设备切换) -->
+    <select id="selectDeviceList" resultMap="DeviceListResultMap">
+        SELECT 
+            r.device_uid,
+            COALESCE(NULLIF(r.device_nickname, ''), d.product_model) AS nickname,
+            r.device_avatar AS avatar,
+            COALESCE(r.is_current, 0) = 1 AS is_current,
+            COALESCE(d.online_status, 0) = 1 AS is_online,
+            COALESCE(d.battery_level, 0) AS battery_level,
+            d.product_model,
+            d.mac AS mac_address
+        FROM user_device_rel r
+        LEFT JOIN device_info d ON r.device_uid = d.device_uid
+        WHERE r.user_id = #{userId}
+        ORDER BY COALESCE(r.is_current, 0) DESC, r.last_used_time DESC, r.create_time DESC
+    </select>
+
+    <!-- 重置当前设备状态 -->
+    <update id="clearCurrentDevice">
+        UPDATE user_device_rel 
+        SET is_current = 0 
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 设置新的当前设备 -->
+    <update id="setCurrentDevice">
+        UPDATE user_device_rel 
+        SET is_current = 1, last_used_time = NOW() 
+        WHERE user_id = #{userId} AND device_uid = #{deviceUid}
+    </update>
+
+    <!-- 查询用户当前选中的设备 -->
+    <select id="selectCurrentDevice" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user_device_rel
+        WHERE user_id = #{userId} AND is_current = 1
+        LIMIT 1
+    </select>
+
+    <!-- 更新设备的OTA更新标记 -->
+    <update id="updateOtaUpdateFlag">
+        UPDATE user_device_rel 
+        SET has_ota_update = #{hasOtaUpdate}
+        WHERE device_uid = #{deviceUid}
+    </update>
+
+</mapper>
