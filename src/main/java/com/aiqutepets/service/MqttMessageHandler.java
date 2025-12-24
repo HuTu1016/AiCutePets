@@ -76,7 +76,7 @@ public class MqttMessageHandler implements MessageHandler {
         String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
         String payload = message.getPayload().toString();
 
-        log.info("收到 MQTT 消息: topic={}, payload={}", topic, payload);
+        log.trace("收到 MQTT 消息: topic={}, payload={}", topic, payload);
 
         try {
             // 1. 解析 Topic，提取 deviceId 和 topic 类型
@@ -201,7 +201,7 @@ public class MqttMessageHandler implements MessageHandler {
      * 更新 Redis: device:online:{deviceId} = true (设置 120 秒过期)
      */
     private void handleHeartbeat(String deviceId, JsonNode payloadNode) {
-        log.info("处理心跳消息: deviceId={}", deviceId);
+        log.trace("处理心跳消息: deviceId={}", deviceId);
         updateDeviceOnline(deviceId);
     }
 
@@ -211,7 +211,7 @@ public class MqttMessageHandler implements MessageHandler {
     private void updateDeviceOnline(String deviceId) {
         String redisKey = DEVICE_ONLINE_KEY_PREFIX + deviceId;
         stringRedisTemplate.opsForValue().set(redisKey, "true", ONLINE_EXPIRE_SECONDS, TimeUnit.SECONDS);
-        log.debug("设备在线状态已更新: key={}, expireSeconds={}", redisKey, ONLINE_EXPIRE_SECONDS);
+        log.trace("设备在线状态已更新: key={}, expireSeconds={}", redisKey, ONLINE_EXPIRE_SECONDS);
     }
 
     /**
@@ -220,7 +220,7 @@ public class MqttMessageHandler implements MessageHandler {
      * 存入 Redis Hash: device:status:{deviceId}
      */
     private void handleUploadParam(String deviceId, JsonNode payloadNode) {
-        log.info("处理参数上报消息: deviceId={}", deviceId);
+        log.debug("处理参数上报消息: deviceId={}", deviceId);
 
         String redisKey = DEVICE_STATUS_KEY_PREFIX + deviceId;
 
@@ -257,7 +257,7 @@ public class MqttMessageHandler implements MessageHandler {
             // 设置过期时间
             stringRedisTemplate.expire(redisKey, STATUS_EXPIRE_SECONDS, TimeUnit.SECONDS);
 
-            log.info("设备状态已更新(Hash): key={}, fields={}", redisKey, statusMap.keySet());
+            log.debug("设备状态已更新(Hash): key={}, fields={}", redisKey, statusMap.keySet());
 
             // 同时更新设备在线状态
             updateDeviceOnline(deviceId);

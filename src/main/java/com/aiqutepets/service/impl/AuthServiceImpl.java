@@ -40,12 +40,23 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse wxLogin(LoginRequest loginRequest) {
-        // 1. 调用微信接口获取 openid 和 session_key
-        WxSessionResponse wxSession = getWxSession(loginRequest.getCode());
+        WxSessionResponse wxSession;
 
-        if (wxSession.getErrcode() != null && wxSession.getErrcode() != 0) {
-            log.error("微信登录失败: errcode={}, errmsg={}", wxSession.getErrcode(), wxSession.getErrmsg());
-            throw new RuntimeException("微信登录失败: " + wxSession.getErrmsg());
+        // Mock 模式：跳过微信接口调用，用于开发测试
+        if (wxConfig.isMockEnabled()) {
+            log.warn("⚠️ [开发模式] 使用 Mock 登录，跳过微信接口调用");
+            log.warn("⚠️ Mock openid: {}", wxConfig.getMockOpenid());
+            wxSession = new WxSessionResponse();
+            wxSession.setOpenid(wxConfig.getMockOpenid());
+            wxSession.setSessionKey("mock_session_key_" + System.currentTimeMillis());
+        } else {
+            // 正式模式：调用微信接口获取 openid 和 session_key
+            wxSession = getWxSession(loginRequest.getCode());
+
+            if (wxSession.getErrcode() != null && wxSession.getErrcode() != 0) {
+                log.error("微信登录失败: errcode={}, errmsg={}", wxSession.getErrcode(), wxSession.getErrmsg());
+                throw new RuntimeException("微信登录失败: " + wxSession.getErrmsg());
+            }
         }
 
         String openid = wxSession.getOpenid();

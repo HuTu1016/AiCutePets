@@ -26,8 +26,11 @@ mybatis:
 # 微信小程序配置
 wx:
   miniapp:
-    app-id: your_app_id
-    app-secret: your_app_secret
+    app-id: wxd19c8b9e53b8d3d1
+    app-secret: 60ee17e0ea9afeeb0cff0b159b14c356
+    # 开发模式 Mock 配置（生产环境务必设为 false）
+    mock-enabled: true
+    mock-openid: test_openid_dev_12345
 
 # JWT 配置
 jwt:
@@ -47,7 +50,7 @@ thirdparty:
   diary-list-url: /toy/v2/getDiaryList
   ota-status-url: /devicemgr/device/CGI!checkOtaStatus.action
   ota-check-ver-url: /devicemgr/app/CGI!getDeviceSoft.action
-  ota-trigger-url: /devicemgr/app/CGI!upgradeDevice.action
+  ota-trigger-url: /devicemgr/app/CGI!setDeviceUpdate.action
   timeout: 10000
 
 # MQTT 配置

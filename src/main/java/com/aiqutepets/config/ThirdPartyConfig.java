@@ -18,6 +18,16 @@ public class ThirdPartyConfig {
     private String baseUrl = "https://api.example.com";
 
     /**
+     * 全局签名密钥（用于 OTA 等接口签名）
+     */
+    private String signSecret;
+
+    /**
+     * AES 解密密钥
+     */
+    private String aesKey;
+
+    /**
      * 日记列表接口路径
      */
     private String diaryListUrl = "/toy/v2/getDiaryList";

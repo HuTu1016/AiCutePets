@@ -62,7 +62,7 @@ public class HomeController {
      */
     @Operation(summary = "获取首页数据", description = "聚合首页所需数据：设备基础信息、AI成长数据（等级/进度）、徽章状态、五维数值、实时在线状态、电量、陪伴天数、今日心情文案。需要 JWT 鉴权")
     @GetMapping("/index")
-    public Result<HomeIndexDTO> getHomeIndex(@RequestAttribute("userId") Long userId) {
+    public Result<HomeIndexDTO> getHomeIndex(@RequestAttribute("currentUserId") Long userId) {
         log.info("获取首页数据: userId={}", userId);
 
         // ============ 步骤 A: 获取当前设备 ============

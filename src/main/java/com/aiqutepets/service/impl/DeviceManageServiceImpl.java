@@ -114,16 +114,20 @@ public class DeviceManageServiceImpl implements DeviceManageService {
                     .build();
         }
 
-        // 4. 创建绑定关系（设置为管理员）
+        // 4. 创建绑定关系（设置为管理员，并设为当前设备）
+        // 先清除该用户其他设备的 is_current 状态
+        userDeviceRelMapper.clearCurrentDevice(userId);
+
         UserDeviceRel newRel = new UserDeviceRel();
         newRel.setUserId(userId);
         newRel.setDeviceUid(deviceUid);
         newRel.setIsOwner(1); // 首次绑定者为管理员
+        newRel.setIsCurrent(1); // 新绑定的设备自动设为当前设备
         newRel.setBindSource("bluetooth");
         newRel.setCreateTime(LocalDateTime.now());
         userDeviceRelMapper.insert(newRel);
 
-        log.info("创建设备绑定关系: userId={}, deviceUid={}, isOwner=1", userId, deviceUid);
+        log.info("创建设备绑定关系: userId={}, deviceUid={}, isOwner=1, isCurrent=1", userId, deviceUid);
 
         // 5. 更新设备状态为已激活
         if (device.getStatus() == DEVICE_STATUS_INACTIVE) {

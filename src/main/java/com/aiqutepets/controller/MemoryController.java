@@ -66,7 +66,7 @@ public class MemoryController {
     @Operation(summary = "获取记忆日历", description = "获取指定月份的记忆日历，展示日记点标记和状态")
     @GetMapping("/calendar")
     public Result<List<MemoryCalendarDTO>> getMemoryCalendar(
-            @RequestAttribute("userId") Long userId,
+            @RequestAttribute("currentUserId") Long userId,
             @Parameter(description = "年份", example = "2025") @RequestParam int year,
             @Parameter(description = "月份 (1-12)", example = "12") @RequestParam int month) {
 
@@ -135,7 +135,7 @@ public class MemoryController {
     @Operation(summary = "获取日记详情", description = "获取指定日期的日记详情，使用 Cache-Aside 策略")
     @GetMapping("/detail")
     public Result<AiDiaryDetailVO> getDiaryDetail(
-            @RequestAttribute("userId") Long userId,
+            @RequestAttribute("currentUserId") Long userId,
             @Parameter(description = "日期 (yyyy-MM-dd)", example = "2025-12-22") @RequestParam String date) {
 
         log.info("获取日记详情: userId={}, date={}", userId, date);
@@ -260,7 +260,7 @@ public class MemoryController {
      */
     @Operation(summary = "获取徽章墙", description = "获取已解锁和未解锁的徽章列表")
     @GetMapping("/badges")
-    public Result<AiBadgeListVO> getBadgeList(@RequestAttribute("userId") Long userId) {
+    public Result<AiBadgeListVO> getBadgeList(@RequestAttribute("currentUserId") Long userId) {
 
         log.info("获取徽章墙: userId={}", userId);
 
@@ -312,7 +312,7 @@ public class MemoryController {
     @Operation(summary = "确认徽章已展示", description = "标记徽章为已展示，用于前端弹窗确认后调用")
     @PostMapping("/badges/ack")
     public Result<Boolean> acknowledgeBadge(
-            @RequestAttribute("userId") Long userId,
+            @RequestAttribute("currentUserId") Long userId,
             @Parameter(description = "徽章代码", example = "first_chat") @RequestParam String badgeCode) {
 
         log.info("确认徽章已展示: userId={}, badgeCode={}", userId, badgeCode);

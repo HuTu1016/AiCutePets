@@ -56,7 +56,7 @@ public class OtaController {
     @Operation(summary = "检查固件详情", description = "查询指定设备的OTA升级状态，聚合当前状态和最新固件信息。需要JWT鉴权")
     @GetMapping("/check")
     public Result<OtaCheckResultDTO> checkOtaStatus(
-            @RequestAttribute("userId") Long userId,
+            @RequestAttribute("currentUserId") Long userId,
             @Parameter(description = "设备UID", required = true) @RequestParam String deviceUid) {
 
         log.info("检查OTA固件状态: userId={}, deviceUid={}", userId, deviceUid);
@@ -193,7 +193,7 @@ public class OtaController {
     @Operation(summary = "执行立即升级", description = "向指定设备下发OTA升级指令。⚠️ 只有设备管理员(is_owner=1)才能操作。需要JWT鉴权")
     @PostMapping("/upgrade")
     public Result<String> triggerUpgrade(
-            @RequestAttribute("userId") Long userId,
+            @RequestAttribute("currentUserId") Long userId,
             @Parameter(description = "设备UID", required = true) @RequestParam String deviceUid) {
 
         log.info("发起OTA升级指令: userId={}, deviceUid={}", userId, deviceUid);

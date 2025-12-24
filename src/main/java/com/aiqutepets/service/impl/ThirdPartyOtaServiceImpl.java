@@ -116,7 +116,7 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
             }
             sb.append(entry.getKey()).append("=").append(entry.getValue());
         }
-        sb.append(secretKey);
+        sb.append("&").append(secretKey);
 
         String signStr = sb.toString();
         log.debug("签名原文: {}", signStr);
@@ -536,45 +536,41 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
     }
 
     @Override
-    public boolean triggerFirmwareUpgrade(String deviceUid, String secretKey) {
+    public boolean triggerFirmwareUpgrade(String deviceUid, String ignoredSecretKey) {
         log.info("发起设备固件升级指令: deviceUid={}", deviceUid);
 
         try {
-            // 1. 构造请求参数
+            // 1. 获取全局签名密钥（用于计算签名，不用于传输！）
+            String signSecret = thirdPartyConfig.getSignSecret();
+            if (signSecret == null || signSecret.isEmpty()) {
+                throw new RuntimeException("配置错误: sign-secret 未在 application.yml 中配置");
+            }
+
+            // 2. 构造请求参数
             long timestamp = System.currentTimeMillis();
             Map<String, String> params = new TreeMap<>();
             params.put("uid", deviceUid);
             params.put("timestamp", String.valueOf(timestamp));
 
-            // 2. 生成签名
-            String signature = generateSignature(params, secretKey);
+            // 3. 使用全局密钥生成签名（密钥仅用于计算，绝不传输）
+            String signature = generateSignature(params, signSecret);
             params.put("signature", signature);
 
-            // 3. 构造请求 URL
-
+            // 4. 构造请求 URL（GET 方式，参数通过 Query String 传递）
             String baseUrl = thirdPartyConfig.getBaseUrl();
             String upgradePath = thirdPartyConfig.getOtaUpgradeDeviceUrl();
-            String url = baseUrl + upgradePath;
 
-            log.debug("发起固件升级请求: url={}", url);
-
-            // 4. 发送 POST 请求
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
-
-            // 将参数构建为表单格式
-            StringBuilder formBody = new StringBuilder();
+            // 构建带参数的 URL
+            org.springframework.web.util.UriComponentsBuilder builder = org.springframework.web.util.UriComponentsBuilder
+                    .fromHttpUrl(baseUrl + upgradePath);
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                if (formBody.length() > 0) {
-                    formBody.append("&");
-                }
-                formBody.append(entry.getKey()).append("=").append(entry.getValue());
+                builder.queryParam(entry.getKey(), entry.getValue());
             }
+            String url = builder.toUriString();
+            log.debug("发起固件升级请求(GET): url={}", url);
 
-            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(
-                    formBody.toString(), headers);
-
-            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            // 5. 发送 GET 请求
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             String responseBody = response.getBody();
             log.debug("固件升级接口响应: {}", responseBody);
 
