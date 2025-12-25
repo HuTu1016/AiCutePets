@@ -11,7 +11,7 @@
  Target Server Version : 80044 (8.0.44)
  File Encoding         : 65001
 
- Date: 23/12/2025 12:57:10
+ Date: 25/12/2025 16:18:18
 */
 
 SET NAMES utf8mb4;
@@ -94,12 +94,12 @@ CREATE TABLE `device_info`  (
   `last_active_time` datetime NULL DEFAULT NULL COMMENT '最后活跃时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_uid`(`device_uid` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备白名单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备白名单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of device_info
 -- ----------------------------
-INSERT INTO `device_info` VALUES (1, 'Q0102_TEST_001', 'AA:BB:CC:DD:EE:FF', 'test_secret_123', 'RABBIT-V1', 0, '2025-12-19 15:23:12', NULL, 0, 0, NULL);
+INSERT INTO `device_info` VALUES (1, 'Q0102_TEST_001', 'AA:BB:CC:DD:EE:FF', 'test_secret_123', 'RABBIT-V1', 1, '2025-12-19 15:23:12', NULL, 0, 0, NULL);
 
 -- ----------------------------
 -- Table structure for device_ota_log
@@ -116,11 +116,32 @@ CREATE TABLE `device_ota_log`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_uid`(`device_uid` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备OTA操作日志' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '设备OTA操作日志' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of device_ota_log
 -- ----------------------------
+INSERT INTO `device_ota_log` VALUES (1, 'Q0102_TEST_001', 1, NULL, 1, 0, '{\"success\":false,\"code\":401,\"message\":\"未提供token\",\"data\":{}}', '2025-12-23 14:34:51');
+INSERT INTO `device_ota_log` VALUES (2, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-23 15:23:02');
+INSERT INTO `device_ota_log` VALUES (3, 'Q0102_TEST_001', 1, NULL, 1, 0, '{\"success\":false,\"code\":401,\"message\":\"未提供token\",\"data\":{}}', '2025-12-23 15:23:07');
+INSERT INTO `device_ota_log` VALUES (4, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-23 15:23:13');
+INSERT INTO `device_ota_log` VALUES (5, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-23 15:44:38');
+INSERT INTO `device_ota_log` VALUES (6, 'Q0102_TEST_001', 1, NULL, 1, 0, '{\"success\":false,\"code\":401,\"message\":\"未提供token\",\"data\":{}}', '2025-12-24 10:13:07');
+INSERT INTO `device_ota_log` VALUES (7, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 10:13:10');
+INSERT INTO `device_ota_log` VALUES (8, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:03:22');
+INSERT INTO `device_ota_log` VALUES (9, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:03:48');
+INSERT INTO `device_ota_log` VALUES (10, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:03:49');
+INSERT INTO `device_ota_log` VALUES (11, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:03:49');
+INSERT INTO `device_ota_log` VALUES (12, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:03:55');
+INSERT INTO `device_ota_log` VALUES (13, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:04:54');
+INSERT INTO `device_ota_log` VALUES (14, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:24:57');
+INSERT INTO `device_ota_log` VALUES (15, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:25:19');
+INSERT INTO `device_ota_log` VALUES (16, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:27:51');
+INSERT INTO `device_ota_log` VALUES (17, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:30:20');
+INSERT INTO `device_ota_log` VALUES (18, 'Q0102_TEST_001', 1, NULL, 1, 0, '{\"success\":false,\"code\":401,\"message\":\"未提供token\",\"data\":{}}', '2025-12-24 11:34:40');
+INSERT INTO `device_ota_log` VALUES (19, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 11:43:41');
+INSERT INTO `device_ota_log` VALUES (20, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 16:06:44');
+INSERT INTO `device_ota_log` VALUES (21, 'Q0102_TEST_001', 1, NULL, 2, 0, '发起升级失败: 未提供token', '2025-12-24 16:36:15');
 
 -- ----------------------------
 -- Table structure for mp_user
@@ -138,11 +159,12 @@ CREATE TABLE `mp_user`  (
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_openid`(`openid` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '小程序用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '小程序用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of mp_user
 -- ----------------------------
+INSERT INTO `mp_user` VALUES (1, 'test_openid_dev_12345', NULL, '19144381232', NULL, NULL, 'mock_session_key_1766648636664', '2025-12-23 13:38:50', '2025-12-25 15:43:57');
 
 -- ----------------------------
 -- Table structure for user_device_rel
@@ -170,10 +192,12 @@ CREATE TABLE `user_device_rel`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_user_device`(`user_id` ASC, `device_uid` ASC) USING BTREE,
   INDEX `idx_user_current`(`user_id` ASC, `is_current` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户设备绑定关系' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户设备绑定关系' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user_device_rel
 -- ----------------------------
+INSERT INTO `user_device_rel` VALUES (2, 1, 'Q0102_TEST_001', 1, 'bluetooth', '2025-12-24 10:12:58', '', '', NULL, 0, '2025-12-24 10:12:57', 1, 0, NULL, NULL, NULL, NULL, 0);
+INSERT INTO `user_device_rel` VALUES (3, 1, '7EAAD1CD390C', 1, 'bluetooth', '2025-12-24 16:48:33', NULL, NULL, NULL, 0, '2025-12-24 16:48:32', 1, 0, NULL, NULL, NULL, NULL, 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

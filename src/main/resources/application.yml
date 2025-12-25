@@ -48,7 +48,7 @@ thirdparty:
   sign-secret: gyvhh104ow34iqhy6410yqqnu0ofsp82
   aes-key: 885ee6378f2b29c8
   diary-list-url: /toy/v2/getDiaryList
-  ota-status-url: /devicemgr/device/CGI!checkOtaStatus.action
+  ota-status-url: /devicemgr/app/CGI!getDeviceSoft.action
   ota-check-ver-url: /devicemgr/app/CGI!getDeviceSoft.action
   ota-trigger-url: /devicemgr/app/CGI!setDeviceUpdate.action
   timeout: 10000

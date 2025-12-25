@@ -69,24 +69,30 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
         log.info("检查设备固件更新状态: deviceUid={}", deviceUid);
 
         try {
-            // 1. 构造请求参数
+            // 1. 获取全局签名密钥（用于计算签名）
+            String signSecret = thirdPartyConfig.getSignSecret();
+            if (signSecret == null || signSecret.isEmpty()) {
+                throw new RuntimeException("配置错误: sign-secret 未在 application.yml 中配置");
+            }
+
+            // 2. 构造请求参数
             long timestamp = System.currentTimeMillis();
             Map<String, String> params = new TreeMap<>();
             params.put("uid", deviceUid);
             params.put("timestamp", String.valueOf(timestamp));
 
-            // 2. 生成签名
-            String signature = generateSignature(params, secretKey);
+            // 3. 使用全局密钥生成签名（密钥仅用于计算，不传输）
+            String signature = generateSignature(params, signSecret);
             params.put("signature", signature);
 
-            // 3. 构造请求 URL
+            // 4. 构造请求 URL
             String url = buildRequestUrl(params);
             log.debug("请求第三方 OTA 接口: {}", url);
 
-            // 4. 发送请求
+            // 5. 发送请求
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
-            // 5. 解析响应
+            // 6. 解析响应
             return parseResponse(response.getBody());
 
         } catch (Exception e) {
@@ -176,6 +182,14 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
 
     /**
      * 解析第三方接口响应
+     * 
+     * 响应格式:
+     * {
+     * "result": "1", // 1=成功
+     * "isUpdate": 1, // 1=可以升级, 0=不需要升级
+     * "version": "xxx", // 设备当前版本号
+     * "updateVersion": "xxx" // 目标版本号
+     * }
      *
      * @param responseBody 响应体
      * @return 固件检查结果
@@ -186,23 +200,38 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
 
-            int result = root.path("result").asInt(0);
-            int updateStatus = root.path("updateStatus").asInt(STATUS_IDLE);
-            String currentVersion = root.path("currentVersion").asText("");
-            String latestVersion = root.path("latestVersion").asText("");
-            int progress = root.path("progress").asInt(0);
-            String updateDescription = root.path("updateDescription").asText("");
+            // result 可能是字符串 "1" 或数字 1
+            String resultStr = root.path("result").asText("0");
+            int result = "1".equals(resultStr) ? 1 : root.path("result").asInt(0);
 
-            // 判断是否有新版本
-            boolean hasNewVersion = (result == 1) && !latestVersion.isEmpty()
-                    && !latestVersion.equals(currentVersion);
+            // isUpdate: 1=可以升级, 0=不需要升级
+            int isUpdate = root.path("isUpdate").asInt(0);
+
+            // version: 设备当前版本号
+            String currentVersion = root.path("version").asText("");
+
+            // updateVersion: 目标版本号
+            String latestVersion = root.path("updateVersion").asText("");
+
+            // 兼容旧字段名
+            if (latestVersion.isEmpty()) {
+                latestVersion = root.path("latestVersion").asText("");
+            }
+
+            // 更新状态（此接口主要返回是否有更新，没有详细的下载/升级状态）
+            int updateStatus = STATUS_IDLE;
+
+            // 判断是否有新版本：result=1 且 isUpdate=1
+            boolean hasNewVersion = (result == 1) && (isUpdate == 1);
 
             // 生成状态描述
-            String statusDesc = getStatusDescription(updateStatus);
-
-            // 如果正在下载或升级中，优先提示进度
-            if (updateStatus == STATUS_DOWNLOADING || updateStatus == STATUS_UPGRADING) {
-                statusDesc = statusDesc + " (" + progress + "%)";
+            String statusDesc;
+            if (result != 1) {
+                statusDesc = "查询失败";
+            } else if (hasNewVersion) {
+                statusDesc = "有新版本可更新";
+            } else {
+                statusDesc = "已是最新版本";
             }
 
             return FirmwareCheckResponse.builder()
@@ -211,8 +240,8 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
                     .latestVersion(latestVersion)
                     .updateStatus(updateStatus)
                     .statusDesc(statusDesc)
-                    .progress(progress)
-                    .updateDescription(updateDescription)
+                    .progress(0)
+                    .updateDescription("")
                     .build();
 
         } catch (Exception e) {
