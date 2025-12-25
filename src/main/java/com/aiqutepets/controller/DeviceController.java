@@ -2,7 +2,6 @@ package com.aiqutepets.controller;
 
 import com.aiqutepets.common.Result;
 import com.aiqutepets.dto.*;
-import com.aiqutepets.interceptor.JwtInterceptor;
 import com.aiqutepets.service.DeviceManageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -55,8 +53,9 @@ public class DeviceController {
      */
     @Operation(summary = "绑定设备", description = "将设备绑定到当前用户，需要 JWT 鉴权")
     @PostMapping("/bind")
-    public Result<DeviceBindResponse> bindDevice(@RequestBody DeviceBindRequest request,
-            HttpServletRequest httpRequest) {
+    public Result<DeviceBindResponse> bindDevice(
+            @RequestBody DeviceBindRequest request,
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到设备绑定请求: deviceUid={}", request.getDeviceUid());
 
         if (request.getDeviceUid() == null || request.getDeviceUid().isEmpty()) {
@@ -64,7 +63,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             DeviceBindResponse response = deviceManageService.bindDevice(userId, request);
 
             if (response.getSuccess()) {
@@ -86,7 +84,7 @@ public class DeviceController {
     @GetMapping("/detail")
     public Result<MyDeviceDTO> getDeviceDetail(
             @Parameter(description = "设备唯一标识", required = true, example = "ABC123") @RequestParam("deviceUid") String deviceUid,
-            HttpServletRequest httpRequest) {
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到获取设备详情请求: deviceUid={}", deviceUid);
 
         if (deviceUid == null || deviceUid.isEmpty()) {
@@ -94,7 +92,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             MyDeviceDTO deviceDetail = deviceManageService.getDeviceDetail(userId, deviceUid);
 
             if (deviceDetail == null) {
@@ -114,8 +111,9 @@ public class DeviceController {
      */
     @Operation(summary = "更新设备信息", description = "更新设备昵称、头像等信息，需要 JWT 鉴权")
     @PostMapping("/update")
-    public Result<Void> updateDevice(@RequestBody DeviceUpdateRequest request,
-            HttpServletRequest httpRequest) {
+    public Result<Void> updateDevice(
+            @RequestBody DeviceUpdateRequest request,
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到更新设备信息请求: deviceUid={}", request.getDeviceUid());
 
         if (request.getDeviceUid() == null || request.getDeviceUid().isEmpty()) {
@@ -123,7 +121,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             boolean success = deviceManageService.updateDevice(userId, request);
 
             if (success) {
@@ -145,7 +142,7 @@ public class DeviceController {
     @PostMapping("/unbind")
     public Result<String> unbindDevice(
             @Parameter(description = "设备唯一标识", required = true, example = "ABC123") @RequestParam("deviceUid") String deviceUid,
-            HttpServletRequest httpRequest) {
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到解除设备绑定请求: deviceUid={}", deviceUid);
 
         if (deviceUid == null || deviceUid.isEmpty()) {
@@ -153,7 +150,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             String message = deviceManageService.unbindDevice(userId, deviceUid);
 
             if ("您未绑定该设备".equals(message)) {
@@ -175,7 +171,7 @@ public class DeviceController {
     @GetMapping("/firmware/check")
     public Result<FirmwareCheckResponse> checkFirmwareUpdate(
             @Parameter(description = "设备唯一标识", required = true, example = "ABC123") @RequestParam("deviceUid") String deviceUid,
-            HttpServletRequest httpRequest) {
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到检查固件更新请求: deviceUid={}", deviceUid);
 
         if (deviceUid == null || deviceUid.isEmpty()) {
@@ -183,7 +179,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             FirmwareCheckResponse response = deviceManageService.checkFirmwareUpdate(userId, deviceUid);
 
             if (response == null) {
@@ -205,7 +200,7 @@ public class DeviceController {
     @PostMapping("/refresh-status")
     public Result<DeviceStatusResponse> refreshDeviceStatus(
             @Parameter(description = "设备唯一标识", required = true, example = "ABC123") @RequestParam("deviceUid") String deviceUid,
-            HttpServletRequest httpRequest) {
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到刷新设备状态请求: deviceUid={}", deviceUid);
 
         if (deviceUid == null || deviceUid.isEmpty()) {
@@ -213,7 +208,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             DeviceStatusResponse response = deviceManageService.refreshDeviceStatus(userId, deviceUid);
 
             if (response == null) {
@@ -233,11 +227,11 @@ public class DeviceController {
      */
     @Operation(summary = "获取设备列表", description = "获取当前用户绑定的所有设备列表，需要 JWT 鉴权")
     @GetMapping("/list")
-    public Result<List<DeviceListDTO>> getDeviceList(HttpServletRequest httpRequest) {
+    public Result<List<DeviceListDTO>> getDeviceList(
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到获取设备列表请求");
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             List<DeviceListDTO> list = deviceManageService.getDeviceList(userId);
             return Result.success(list);
         } catch (Exception e) {
@@ -254,7 +248,7 @@ public class DeviceController {
     @PostMapping("/switch")
     public Result<Void> switchDevice(
             @Parameter(description = "设备唯一标识", required = true, example = "ABC123") @RequestParam("deviceUid") String deviceUid,
-            HttpServletRequest httpRequest) {
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到切换设备请求: deviceUid={}", deviceUid);
 
         if (deviceUid == null || deviceUid.isEmpty()) {
@@ -262,7 +256,6 @@ public class DeviceController {
         }
 
         try {
-            Long userId = (Long) httpRequest.getAttribute(JwtInterceptor.USER_ID_KEY);
             boolean success = deviceManageService.switchDevice(userId, deviceUid);
 
             if (!success) {

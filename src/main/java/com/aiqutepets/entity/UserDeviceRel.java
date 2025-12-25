@@ -80,6 +80,11 @@ public class UserDeviceRel {
     private String currentBadge;
 
     /**
+     * 五维成长数据缓存（JSON格式）
+     */
+    private String growthStatsJson;
+
+    /**
      * 最后心情日期（用于缓存判断）
      */
     private java.time.LocalDate lastMoodDate;

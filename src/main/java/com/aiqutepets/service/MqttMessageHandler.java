@@ -13,8 +13,6 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -217,7 +215,8 @@ public class MqttMessageHandler implements MessageHandler {
     /**
      * 处理参数上报消息 (cmd=uploadParam)
      * 提取 battery_level, volume_ratio, wifi_strength
-     * 存入 Redis Hash: device:status:{deviceId}
+     * 存入 Redis String (JSON格式): device:status:{deviceId}
+     * 与 DeviceMqttServiceImpl 保持一致
      */
     private void handleUploadParam(String deviceId, JsonNode payloadNode) {
         log.debug("处理参数上报消息: deviceId={}", deviceId);
@@ -225,39 +224,42 @@ public class MqttMessageHandler implements MessageHandler {
         String redisKey = DEVICE_STATUS_KEY_PREFIX + deviceId;
 
         try {
-            // 构造 Hash 数据
-            Map<String, String> statusMap = new HashMap<>();
-            statusMap.put("ts", String.valueOf(System.currentTimeMillis()));
+            // 构造 JSON 对象（与 DeviceMqttServiceImpl 格式一致）
+            com.fasterxml.jackson.databind.node.ObjectNode statusNode = objectMapper.createObjectNode();
+            statusNode.put("ts", System.currentTimeMillis());
 
-            // 提取 battery_level (电量)
+            // 提取 battery_level (电量) - 同时支持 battery_level 和 bat 字段
             if (payloadNode.has("battery_level")) {
-                statusMap.put("battery_level", payloadNode.get("battery_level").asText());
+                statusNode.put("bat", payloadNode.get("battery_level").asInt());
+            } else if (payloadNode.has("bat")) {
+                statusNode.put("bat", payloadNode.get("bat").asInt());
             }
 
             // 提取 volume_ratio (音量)
             if (payloadNode.has("volume_ratio")) {
-                statusMap.put("volume_ratio", payloadNode.get("volume_ratio").asText());
+                statusNode.put("volume", payloadNode.get("volume_ratio").asInt());
             }
 
-            // 提取 wifi_strength (WiFi信号强度)
+            // 提取 wifi_strength (WiFi信号强度) - 同时支持 wifi_strength 和 rssi 字段
             if (payloadNode.has("wifi_strength")) {
-                statusMap.put("wifi_strength", payloadNode.get("wifi_strength").asText());
+                statusNode.put("rssi", payloadNode.get("wifi_strength").asInt());
+            } else if (payloadNode.has("rssi")) {
+                statusNode.put("rssi", payloadNode.get("rssi").asInt());
             }
 
             // 提取其他可能的字段
             if (payloadNode.has("wifi_ssid")) {
-                statusMap.put("wifi_ssid", payloadNode.get("wifi_ssid").asText());
+                statusNode.put("wifi_ssid", payloadNode.get("wifi_ssid").asText());
             }
             if (payloadNode.has("voice_type")) {
-                statusMap.put("voice_type", payloadNode.get("voice_type").asText());
+                statusNode.put("voice_type", payloadNode.get("voice_type").asText());
             }
 
-            // 存入 Redis Hash
-            stringRedisTemplate.opsForHash().putAll(redisKey, statusMap);
-            // 设置过期时间
-            stringRedisTemplate.expire(redisKey, STATUS_EXPIRE_SECONDS, TimeUnit.SECONDS);
+            // 转换为 JSON 字符串并存入 Redis String（与 DeviceMqttServiceImpl 保持一致）
+            String statusJson = objectMapper.writeValueAsString(statusNode);
+            stringRedisTemplate.opsForValue().set(redisKey, statusJson, STATUS_EXPIRE_SECONDS, TimeUnit.SECONDS);
 
-            log.debug("设备状态已更新(Hash): key={}, fields={}", redisKey, statusMap.keySet());
+            log.debug("设备状态已更新(String/JSON): key={}, value={}", redisKey, statusJson);
 
             // 同时更新设备在线状态
             updateDeviceOnline(deviceId);

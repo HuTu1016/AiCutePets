@@ -101,11 +101,15 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
 
     /**
      * 生成签名
-     * 签名规则：参数名按字母排序 -> 拼接 key=value&key=value -> 末尾加上 secretKey -> MD5
+     * 签名规则（与ThirdPartyClient保持一致）：
+     * 1. 参数名按字母排序
+     * 2. 拼接 key=value&key=value
+     * 3. 末尾加上 &secretkey=xxx
+     * 4. 转小写后 MD5
      *
      * @param params    请求参数
      * @param secretKey 设备密钥
-     * @return 签名字符串
+     * @return 签名字符串（32位小写）
      */
     private String generateSignature(Map<String, String> params, String secretKey) {
         // TreeMap 已经按 key 排序
@@ -116,9 +120,11 @@ public class ThirdPartyOtaServiceImpl implements ThirdPartyOtaService {
             }
             sb.append(entry.getKey()).append("=").append(entry.getValue());
         }
-        sb.append("&").append(secretKey);
+        // 与 ThirdPartyClient 保持一致：末尾追加 &secretkey=xxx
+        sb.append("&secretkey=").append(secretKey);
 
-        String signStr = sb.toString();
+        // 转小写后 MD5（与 ThirdPartyClient 保持一致）
+        String signStr = sb.toString().toLowerCase();
         log.debug("签名原文: {}", signStr);
 
         return md5(signStr);

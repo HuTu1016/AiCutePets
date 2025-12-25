@@ -78,14 +78,24 @@ public class DeviceManageServiceImpl implements DeviceManageService {
         String deviceUid = request.getDeviceUid();
         log.info("用户 {} 请求绑定设备: deviceUid={}", userId, deviceUid);
 
-        // 1. 校验设备是否存在
+        // 1. 查询设备是否存在，不存在则自动注册
         DeviceInfo device = deviceInfoMapper.selectByDeviceUid(deviceUid);
         if (device == null) {
-            log.warn("设备不存在: deviceUid={}", deviceUid);
-            return DeviceBindResponse.builder()
-                    .success(false)
-                    .message("设备不存在")
-                    .build();
+            log.info("设备不存在，自动注册新设备: deviceUid={}", deviceUid);
+
+            // 自动创建设备记录
+            device = new DeviceInfo();
+            device.setDeviceUid(deviceUid);
+            device.setMac(request.getMacAddress()); // 从请求中获取 MAC 地址
+            device.setSecretKey("auto_" + deviceUid); // 自动生成密钥（基于设备UID）
+            device.setProductModel("DuoniTu"); // 默认产品型号
+            device.setStatus(DEVICE_STATUS_ACTIVE); // 新绑定直接激活
+            device.setCreateTime(LocalDateTime.now());
+            device.setFirmwareVersion("1.0.0"); // 默认固件版本
+            device.setOnlineStatus(0); // 默认离线
+
+            deviceInfoMapper.insert(device);
+            log.info("设备自动注册成功: deviceUid={}", deviceUid);
         }
 
         // 2. 检查用户是否已绑定该设备
@@ -271,16 +281,22 @@ public class DeviceManageServiceImpl implements DeviceManageService {
 
         String message;
         if (rel.getIsOwner() != null && rel.getIsOwner() == 1) {
-            // 管理员解绑
-            message = "管理员解绑成功，所有成员绑定关系将失效";
-            log.info("管理员解绑设备: userId={}, deviceUid={}", userId, deviceUid);
+            // 管理员解绑：删除所有成员的绑定关系
+            message = "管理员解绑成功，所有成员绑定关系已失效";
+            log.info("管理员解绑设备，清理所有成员: userId={}, deviceUid={}", userId, deviceUid);
+            
+            // 删除该设备的所有绑定关系
+            List<UserDeviceRel> allBindings = userDeviceRelMapper.selectByDeviceUid(deviceUid);
+            for (UserDeviceRel binding : allBindings) {
+                userDeviceRelMapper.deleteById(binding.getId());
+            }
+            log.info("已删除设备所有绑定关系: deviceUid={}, count={}", deviceUid, allBindings.size());
         } else {
+            // 普通成员解绑：只删除自己的绑定
             message = "解绑成功";
+            userDeviceRelMapper.deleteByUserIdAndDeviceUid(userId, deviceUid);
+            log.info("普通成员解绑成功: userId={}, deviceUid={}", userId, deviceUid);
         }
-
-        // 2. 删除绑定关系（目前简单处理，只删除自己的绑定）
-        userDeviceRelMapper.deleteByUserIdAndDeviceUid(userId, deviceUid);
-        log.info("设备解绑成功: userId={}, deviceUid={}", userId, deviceUid);
 
         return message;
     }

@@ -4,15 +4,12 @@ import com.aiqutepets.common.Result;
 import com.aiqutepets.dto.LoginRequest;
 import com.aiqutepets.dto.LoginResponse;
 import com.aiqutepets.dto.PhoneRequest;
-import com.aiqutepets.interceptor.JwtInterceptor;
 import com.aiqutepets.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * 认证控制器
@@ -55,12 +52,14 @@ public class AuthController {
      * 需要 JWT 鉴权
      *
      * @param phoneRequest 手机号授权请求（包含 code）
-     * @param request      HTTP 请求（用于获取当前用户ID）
+     * @param userId       当前用户ID（由 JwtInterceptor 设置）
      * @return 绑定的手机号
      */
     @Operation(summary = "绑定手机号", description = "使用微信手机号授权 code 获取并绑定手机号，需要 JWT 鉴权")
     @PostMapping("/phone")
-    public Result<String> bindPhone(@RequestBody PhoneRequest phoneRequest, HttpServletRequest request) {
+    public Result<String> bindPhone(
+            @RequestBody PhoneRequest phoneRequest,
+            @RequestAttribute("currentUserId") Long userId) {
         log.info("收到获取手机号请求");
 
         if (phoneRequest.getCode() == null || phoneRequest.getCode().isEmpty()) {
@@ -68,8 +67,6 @@ public class AuthController {
         }
 
         try {
-            // 从请求属性中获取当前用户ID（由 JwtInterceptor 设置）
-            Long userId = (Long) request.getAttribute(JwtInterceptor.USER_ID_KEY);
             String phone = authService.bindPhone(userId, phoneRequest.getCode());
             return Result.success(phone);
         } catch (Exception e) {

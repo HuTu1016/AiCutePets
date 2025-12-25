@@ -18,12 +18,17 @@
         <result column="intimacy_level" property="intimacyLevel"/>
         <result column="intimacy_score" property="intimacyScore"/>
         <result column="current_badge" property="currentBadge"/>
+        <result column="growth_stats_json" property="growthStatsJson"/>
+        <result column="last_mood_content" property="lastMoodContent"/>
+        <result column="last_mood_date" property="lastMoodDate"/>
         <result column="has_ota_update" property="hasOtaUpdate"/>
     </resultMap>
 
     <!-- 基础字段列表 -->
     <sql id="Base_Column_List">
-        id, user_id, device_uid, is_owner, bind_source, create_time, device_nickname, device_avatar, is_top, is_current, last_used_time, intimacy_level, intimacy_score, current_badge, has_ota_update
+        id, user_id, device_uid, is_owner, bind_source, create_time, device_nickname, device_avatar, 
+        is_top, is_current, last_used_time, intimacy_level, intimacy_score, current_badge, 
+        growth_stats_json, last_mood_content, last_mood_date, has_ota_update
     </sql>
 
     <!-- 根据ID查询 -->
@@ -80,9 +85,14 @@
             <if test="deviceNickname != null">device_nickname = #{deviceNickname},</if>
             <if test="deviceAvatar != null">device_avatar = #{deviceAvatar},</if>
             <if test="isTop != null">is_top = #{isTop},</if>
+            <if test="isCurrent != null">is_current = #{isCurrent},</if>
+            <if test="lastUsedTime != null">last_used_time = #{lastUsedTime},</if>
             <if test="intimacyLevel != null">intimacy_level = #{intimacyLevel},</if>
             <if test="intimacyScore != null">intimacy_score = #{intimacyScore},</if>
             <if test="currentBadge != null">current_badge = #{currentBadge},</if>
+            <if test="growthStatsJson != null">growth_stats_json = #{growthStatsJson},</if>
+            <if test="lastMoodContent != null">last_mood_content = #{lastMoodContent},</if>
+            <if test="lastMoodDate != null">last_mood_date = #{lastMoodDate},</if>
             <if test="hasOtaUpdate != null">has_ota_update = #{hasOtaUpdate},</if>
         </set>
         WHERE id = #{id}
